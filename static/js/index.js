@@ -1,6 +1,18 @@
 import Home from "../views/Home.js";
 import Puzzles from "../views/Puzzles.js";
+import PuzzleView from "../views/PuzzleView.js";
 import Settings from "../views/Settings.js";
+
+const pathToRegex = path => new RegExp("^" + path.replace(/\//g,"\\/").replace(/:\w+/g,"(.+)") + "$");
+
+const getParams = match => {
+  const values = match.result.slice(1);
+  const keys = Array.from(match.route.path.matchAll(/:(\w+)/g)).map(result => result[1]);
+  
+  return Object.fromEntries(keys.map((key, i) => {
+    return [key,values[i]];
+  }));
+}
 
 //spa setting
 const naviagateTo = url => {
@@ -12,25 +24,26 @@ const router = async () => {
   const routes = [
     { path: "/", view : Home},
     { path: "/puzzles", view : Puzzles},
+    { path: "/puzzles/:id", view : PuzzleView},
     { path: "/settings", view : Settings}
   ];
 
   const potentialMatches = routes.map(route => {
     return {
       route,
-      isMatch : location.pathname === route.path }
+      result : location.pathname.match(pathToRegex(route.path))}
   })
 
-  let match = potentialMatches.find(potentialMatches => potentialMatches.isMatch);
-
+  let match = potentialMatches.find(potentialMatches => potentialMatches.result !== null);
+  console.log(match)
   if  (!match)  {
     match = {
-      route: routes[0],
-      isMatch: true
+      route : routes[0],
+      result : [location.pathname]
     };
   }
-
-  const view = new match.route.view(); //view instance
+  console.log(match);
+  const view = new match.route.view(getParams(match)); //view instance
 
   document.querySelector("#app").innerHTML = await view.getHtml();
   

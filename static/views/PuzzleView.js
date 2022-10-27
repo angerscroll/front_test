@@ -3,7 +3,8 @@ import AbstractView from "./AbstractView.js";
 export default class extends AbstractView {
   constructor(params) {
     super(params);
-    this.setTitle = "Puzzles";
+    this.setTitle = "PuzzlesView";
+    console.log(params.id);
   }
 
   async getHtml() {
